@@ -2,6 +2,7 @@ package com.springweb.employeemanagement.controllers;
 
 import com.springweb.employeemanagement.dto.EmployeeDto;
 import com.springweb.employeemanagement.services.EmployeeService;
+import com.springweb.employeemanagement.services.EmployeeServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-    public EmployeeController(EmployeeService employeeService) {
+    public EmployeeController(EmployeeServiceImpl employeeService) {
         this.employeeService = employeeService;
     }
 
