@@ -1,7 +1,6 @@
 package com.springweb.employeemanagement.advice;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +16,7 @@ public class ApiResponse<T> {
     private String message;
     private T data;
 
+    @JsonFormat
     private LocalDateTime timestamp;
 
     public ApiResponse(int status, String message, T data) {
