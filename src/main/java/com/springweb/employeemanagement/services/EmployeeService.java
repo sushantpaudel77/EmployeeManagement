@@ -6,6 +6,8 @@ import com.springweb.employeemanagement.exception.DuplicateResourceException;
 import com.springweb.employeemanagement.exception.InvalidDataException;
 import com.springweb.employeemanagement.exception.ResourceNotFoundException;
 import com.springweb.employeemanagement.repositories.EmployeeRepository;
+import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -79,26 +81,25 @@ public class EmployeeService {
     public EmployeeDto updatePartialEmployeeById(Long employeeId, Map<String, Object> updates) {
         EmployeeEntity employee = findByEmployeeIdOrThrow(employeeId);
 
-        if (updates.containsKey("name") && updates.get("name") != null) {
-            employee.setName((String) updates.get("name"));
+        if (updates.containsKey(EmployeeField.NAME.getKey()) && updates.get(EmployeeField.NAME.getKey()) != null) {
+            employee.setName((String) updates.get(EmployeeField.NAME.getKey()));
         }
 
-        if (updates.containsKey("email") && updates.get("email") != null) {
-            String newEmail = (String) updates.get("email");
+        if (updates.containsKey(EmployeeField.EMAIL.getKey()) && updates.get(EmployeeField.EMAIL.getKey()) != null) {
+            String newEmail = (String) updates.get(EmployeeField.EMAIL.getKey());
             validateEmailForUpdate(employee, newEmail);
             employee.setEmail(newEmail);
         }
 
-        if (updates.containsKey("age") && updates.get("age") != null) {
-            employee.setAge((Integer) updates.get("age"));
+        if (updates.containsKey(EmployeeField.AGE.getKey()) && updates.get(EmployeeField.AGE.getKey()) != null) {
+            employee.setAge((Integer) updates.get(EmployeeField.AGE.getKey()));
         }
 
-        if (updates.containsKey("isActive") && updates.get("isActive") != null) {
-            employee.setIsActive((Boolean) updates.get("isActive"));
+        if (updates.containsKey(EmployeeField.IS_ACTIVE.getKey()) && updates.get(EmployeeField.IS_ACTIVE.getKey()) != null) {
+            employee.setIsActive((Boolean) updates.get(EmployeeField.IS_ACTIVE.getKey()));
         }
 
         EmployeeEntity savedEmployee = employeeRepository.save(employee);
-
         return convertToDto(savedEmployee);
     }
 
@@ -133,6 +134,21 @@ public class EmployeeService {
         existingEmployee.setEmail(updatedEmployee.getEmail());
         existingEmployee.setAge(updatedEmployee.getAge());
         existingEmployee.setIsActive(updatedEmployee.getIsActive());
+    }
+
+    // Helper enum
+    @Getter
+    public enum EmployeeField {
+        NAME("name"),
+        EMAIL("email"),
+        AGE("age"),
+        IS_ACTIVE("isActive");
+
+        private final String key;
+
+        EmployeeField(String key) {
+            this.key = key;
+        }
     }
 }
 
