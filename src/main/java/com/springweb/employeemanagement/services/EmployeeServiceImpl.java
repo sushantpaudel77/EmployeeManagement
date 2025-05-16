@@ -2,9 +2,9 @@ package com.springweb.employeemanagement.services;
 
 import com.springweb.employeemanagement.dto.EmployeeDto;
 import com.springweb.employeemanagement.entities.EmployeeEntity;
-import com.springweb.employeemanagement.exception.DuplicateResourceException;
-import com.springweb.employeemanagement.exception.InvalidDataException;
-import com.springweb.employeemanagement.exception.ResourceNotFoundException;
+import com.springweb.employeemanagement.advice.customexceptions.DuplicateResourceException;
+import com.springweb.employeemanagement.advice.customexceptions.InvalidDataException;
+import com.springweb.employeemanagement.advice.customexceptions.ResourceNotFoundException;
 import com.springweb.employeemanagement.repositories.EmployeeRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -145,7 +145,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     // Helper enum
     @Getter
-    public enum EmployeeField {
+    private enum EmployeeField {
         NAME("name"),
         EMAIL("email"),
         AGE("age"),

@@ -1,4 +1,4 @@
-package com.springweb.employeemanagement.exception;
+package com.springweb.employeemanagement.advice.customexceptions;
 
 public class InvalidDataException extends RuntimeException {
     public InvalidDataException(String message) {
