@@ -3,9 +3,9 @@ spring:
     name: EmployeeManagement
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST_URL}:5432/${DB_NAME}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: root
   jpa:
     hibernate:
       ddl-auto: update
@@ -17,7 +17,4 @@ spring:
       name: org.postgresql.Driver
 
 my:
-  variable: global
-
-#server:
-#  port: 8085
+  variable: dev
