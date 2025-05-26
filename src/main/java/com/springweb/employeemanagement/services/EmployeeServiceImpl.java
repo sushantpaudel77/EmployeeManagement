@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final ModelMapper modelMapper;
-    private static final String CACHE_NAME = "employees";
+    private static final String EMPLOYEES_CACHE = "employees";
 
     private EmployeeDto convertToDto(EmployeeEntity entity) {
         return modelMapper.map(entity, EmployeeDto.class);
@@ -44,8 +45,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .toList();
     }
 
-
-    @Cacheable(cacheNames = CACHE_NAME, key = "#employeeId")
+    @Cacheable(cacheNames = EMPLOYEES_CACHE, key = "#employeeId")
     @Transactional(readOnly = true)
     @Override
     public EmployeeDto getEmployeeById(Long employeeId) {
@@ -55,7 +55,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         return convertToDto(employeeEntity);
     }
 
-    @CachePut(cacheNames = CACHE_NAME, key = "#result.id")
+    @CachePut(cacheNames = EMPLOYEES_CACHE, key = "#result.id")
     @Transactional
     @Override
     public EmployeeDto createEmployee(EmployeeDto employeeDto) {
@@ -70,7 +70,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         return convertToDto(savedEmployee);
     }
 
-    @CachePut(cacheNames = CACHE_NAME, key = "#employeeId")
+    @CachePut(cacheNames = EMPLOYEES_CACHE, key = "#employeeId")
     @Transactional
     @Override
     public EmployeeDto updateEmployee(Long employeeId, EmployeeDto updatedEmployee) {
@@ -96,15 +96,22 @@ public class EmployeeServiceImpl implements EmployeeService {
         return resultDto;
     }
 
+    @CacheEvict(cacheNames = EMPLOYEES_CACHE, key = "#employeeId")
     @Transactional
     @Override
     public void deleteEmployee(Long employeeId) {
+        log.info("Attempting to delete employee with ID: {}", employeeId);
+
         employeeRepository.findById(employeeId)
-                .ifPresentOrElse(employeeRepository::delete,
-                        () -> {
-                            throw new ResourceNotFoundException("Employee with the ID " + employeeId + " not found");
-                        });
+                .ifPresentOrElse(employee -> {
+                    employeeRepository.delete(employee);
+                    log.info("Successfully deleted employee with ID: {}", employeeId);
+                }, () -> {
+                    log.warn("Employee with ID: {} not found, throwing ResourceNotFoundException", employeeId);
+                    throw new ResourceNotFoundException("Employee with the ID " + employeeId + " not found");
+                });
     }
+
 
     @Transactional
     @Override
