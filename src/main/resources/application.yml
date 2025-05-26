@@ -3,9 +3,11 @@ spring:
     name: EmployeeManagement
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST_URL}:5432/${DB_NAME}
+    url: jdbc:postgresql://localhost:5432/postgres
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,8 +15,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    driver-class:
-      name: org.postgresql.Driver
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 my:
   variable: global

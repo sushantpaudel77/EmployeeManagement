@@ -8,19 +8,24 @@ import com.springweb.employeemanagement.advice.customexceptions.ResourceNotFound
 import com.springweb.employeemanagement.repositories.EmployeeRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final ModelMapper modelMapper;
+    private static final String CACHE_NAME = "employees";
 
     private EmployeeDto convertToDto(EmployeeEntity entity) {
         return modelMapper.map(entity, EmployeeDto.class);
@@ -40,37 +45,55 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
 
+    @Cacheable(cacheNames = CACHE_NAME, key = "#employeeId")
     @Transactional(readOnly = true)
     @Override
     public EmployeeDto getEmployeeById(Long employeeId) {
+        log.info("Fetching employee with ID: {}", employeeId);
         EmployeeEntity employeeEntity = findByEmployeeIdOrThrow(employeeId);
+        log.info("Successfully fetched employee with ID: {}", employeeId);
         return convertToDto(employeeEntity);
     }
 
-
+    @CachePut(cacheNames = CACHE_NAME, key = "#result.id")
     @Transactional
     @Override
     public EmployeeDto createEmployee(EmployeeDto employeeDto) {
 
+        log.info("Creating new employee with email: {}", employeeDto.getEmail());
         validateNewEmployee(employeeDto);
 
         EmployeeEntity employeeEntity = convertToEntity(employeeDto);
         EmployeeEntity savedEmployee = employeeRepository.save(employeeEntity);
+        log.info("Successfully created new employee with ID: {}", savedEmployee.getId());
 
         return convertToDto(savedEmployee);
     }
 
+    @CachePut(cacheNames = CACHE_NAME, key = "#employeeId")
     @Transactional
     @Override
     public EmployeeDto updateEmployee(Long employeeId, EmployeeDto updatedEmployee) {
+        log.info("Start updating employee with ID: {}", employeeId);
+
         EmployeeEntity existingEmployee = findByEmployeeIdOrThrow(employeeId);
+        log.debug("Fetched existing employee details: {}", existingEmployee);
 
         // checks email uniqueness if changed
         validateEmailForUpdate(existingEmployee, updatedEmployee);
+        log.info("Attempted to update email for employee with ID: {}", employeeId);
+
         updateEmployeeFields(existingEmployee, updatedEmployee);
+        log.debug("Employee fields updated for employee ID: {}", employeeId);
 
         EmployeeEntity savedEmployee = employeeRepository.save(existingEmployee);
-        return convertToDto(savedEmployee);
+        log.info("Employee update successful for ID: {}. Persisted employee: {}", employeeId, savedEmployee);
+
+        EmployeeDto resultDto = convertToDto(savedEmployee);
+        log.debug("Converted saved employee entity to DTO: {}", resultDto);
+
+        log.info("Completed updating employee with ID: {}", employeeId);
+        return resultDto;
     }
 
     @Transactional
@@ -141,6 +164,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         existingEmployee.setEmail(updatedEmployee.getEmail());
         existingEmployee.setAge(updatedEmployee.getAge());
         existingEmployee.setIsActive(updatedEmployee.getIsActive());
+        existingEmployee.setDateOfJoining(updatedEmployee.getDateOfJoining());
+        existingEmployee.setRole(updatedEmployee.getRole());
+        existingEmployee.setSalary(updatedEmployee.getSalary());
     }
 
     // Helper enum
